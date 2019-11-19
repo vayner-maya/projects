@@ -1,0 +1,124 @@
+'''
+open the file to read first line is a name then 70 characters of answers to go over (all either A, B or dash). 
+compute the scores and overall result for each person and to report this information to an output file
+create a new file to write output into
+create a list for each person with the data read from the input file, 
+and then calculate the data and write to the output file.
+each pair of lines in the input file is turned into a single line of output in the output file that reports 
+the persons name, the list of percentages and the personality type.
+The test has 10 groups of 7 questions with a repeating pattern in each group of 7 questions.
+The first question in each group is an Introvert or Extrovert question (questions 1, 8, 15, 22, etc). The next two questions are
+for Sensing or iNtuition (questions 2, 3, 9, 10, 16, 17, 23, 24, etc). The next two questions are for Thinking or Feeling
+(questions 4, 5, 11, 12, 18, 19, 25, 26, etc). And the final two questions in each group are for Judging or Perceiving
+(questions 6, 7, 13, 14, 20, 21, 27, 28, etc). Notice that there are half as many Introvert or Extrovert questions as there are
+for the other three dimensions. The seventy letters in the input file appear in question order (first letter for question 1,
+second letter for question 2, third letter for question 3, etc).
+user might leave a question blank, in which case you will find a dash in the input file for that question.
+Dash answers are not included in computing the percentages. 
+
+In particular, your answer counts and answer
+percentages should be stored using arrays. Additionally, you should use arrays and for loops to transform the data
+from one form to another as follows:
+from the answer string to A oand B counts; then from A\/B counts to A\/B percentages
+You start with a String that has 70 characters in it. You convert that into two sets of counters (how many A answers
+for each dimension, how many B answers for each dimension). You convert that into a set of percentages. And you
+finally convert that into a String that represents the personality type. If you work through this step by step, the problem
+will be easier to solve
+Data Example
+String (70 chars) "BABAAAABAAAAAAABAAAABBAAAAAABAAAABABAABAAABABABAABAAAAAABAAAAAABAAAAAA"
+counts of A/B {1, 17, 18, 18}, {9, 3, 2, 2}
+B percentages {90, 15, 10, 10}
+Personality type "ISTJ"
+Notice that the letters A and B in the sample input file sometimes appear as uppercase letters and sometimes appear
+as lowercase letters. Your program must recognize them in either case. You should round percentages to the nearest integer\. 
+'''
+
+def createList(r1, r2): 
+    return [item for item in range(r1, r2+1)] 
+
+def counting(ch,a,b,m):
+    ch = ch.lower()
+    if ch == 'a':
+        a[m] = a[m]+1
+    if ch == 'b':
+        b[m] = b[m]+1
+    if ch == '-':
+        pass
+    return(a,b)
+
+def comp(bb,k,l):
+    if bb == 50:
+        p = 'X'
+    elif bb > 50:
+        p = k
+    else:
+        p = l
+    return p
+
+#Extrovert/Introvert  Sensing/iNtuition  Thinking/Feeling  Judging/Perceiving
+def what_am_i(b_precentage):
+    p = []
+    letters = ['I', 'E', 'N', 'S', 'F', 'T', 'P', 'J']
+    j=0
+    for i in [0,1,2,3]:
+        #print(i, letters[j], letters[j+1],'    ', comp(b_precentage[i],letters[j], letters[j+1]))
+        p.append(comp(b_precentage[i],letters[j], letters[j+1]))
+        j = j+2
+    #print(p)
+    answer = p[0]+p[1]+ p[2] +p[3] 
+    #print(answer) 
+    return(answer)
+
+def add_list(a,b):
+    total = []
+    perce = []
+    for i in [0,1,2,3]:
+        total.append(a[i]+b[i])
+        bb=float(b[i])
+        tt=float(total[i])
+        perce.append(int(round(((bb*100)/tt))))
+        #print(perce[i])
+    return(perce)
+
+
+file2 = open("output_file.txt", "w")
+position = createList(0,69)
+b_precentage = []
+
+with open("personality.txt", "r") as file1:
+    i=0
+    for line in file1:
+        if i%2 == 0:
+            line = line.rstrip('\n')
+            line = line.rstrip('\r')
+            file2.write(line+': ')
+            k=line
+        else:
+            j=0
+            a = [0,0,0,0]
+            b = [0,0,0,0]
+            line = line.rstrip('\n')
+            line = line.rstrip('\r')
+            for ch in line:
+                if j in position[0:70:7]:
+                    counting(ch, a, b, m=0)
+                if (j in position[1:70:7]) or (j in position[2:70:7]):
+                    counting(ch, a, b, m=1)
+                if (j in position[3:70:7]) or (j in position[4:70:7]):
+                    counting(ch, a, b, m=2)
+                if (j in position[5:70:7]) or (j in position[6:70:7]):
+                    counting(ch, a, b, m=3)
+                j = j+1
+            #print('\na = ', a)
+            #print('\nb = ', b)
+            perce = add_list(a,b)
+            #print('\nperce=', perce)
+            s = what_am_i(perce)
+            file2.write(str(perce))
+            file2.write(' = ')
+            file2.write(s)
+            file2.write("\n")
+            #print(k, perce, s)
+        i = i+1
+        
+file2.close()
